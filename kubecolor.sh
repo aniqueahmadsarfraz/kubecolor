@@ -5,6 +5,25 @@ KUBECOLOR_VERSION="0.4.0"
 KUBECOLOR_TAR="kubecolor_${KUBECOLOR_VERSION}_linux_amd64.tar.gz"
 KUBECOLOR_URL="https://github.com/kubecolor/kubecolor/releases/download/v${KUBECOLOR_VERSION}/${KUBECOLOR_TAR}"
 
+# Function to update bashrc and reload
+update_bashrc() {
+    # Clear previous kubecolor settings from .bashrc
+    sed -i '/alias kubectl=/d' ~/.bashrc
+    sed -i '/KUBECOLOR_FORCE_COLOR=/d' ~/.bashrc
+    sed -i '/KUBECOLOR_PRESET=/d' ~/.bashrc
+
+    # Add new configurations to .bashrc
+    echo "# Kubecolor settings" >> ~/.bashrc
+    echo "export KUBECOLOR_FORCE_COLOR=1" >> ~/.bashrc
+    echo "export KUBECOLOR_PRESET=dark" >> ~/.bashrc
+    echo "alias kubectl='KUBECOLOR_FORCE_COLOR=1 KUBECOLOR_PRESET=dark kubecolor'" >> ~/.bashrc
+
+    # Source bashrc in current shell and all parent shells
+    if [ -f ~/.bashrc ]; then
+        exec bash -l
+    fi
+}
+
 # Download kubecolor
 echo "Downloading kubecolor version ${KUBECOLOR_VERSION}..."
 wget $KUBECOLOR_URL -O $KUBECOLOR_TAR
@@ -13,25 +32,31 @@ wget $KUBECOLOR_URL -O $KUBECOLOR_TAR
 echo "Extracting $KUBECOLOR_TAR..."
 tar -xvzf $KUBECOLOR_TAR
 
-# Move the binary to /usr/local/bin
-echo "Moving kubecolor to /usr/local/bin..."
-sudo mv kubecolor /usr/local/bin/
+# Verify if the kubecolor binary is extracted
+if [ -f "kubecolor" ]; then
+    # Move the binary to /usr/local/bin
+    echo "Moving kubecolor to /usr/local/bin..."
+    sudo mv kubecolor /usr/local/bin/
 
-# Set alias for kubectl
-echo "Creating alias for kubectl as kubecolor..."
-echo "alias kubectl='kubecolor'" >> ~/.bashrc
+    # Verify kubecolor installation
+    if command -v kubecolor > /dev/null; then
+        echo "kubecolor installed successfully!"
+    else
+        echo "Error: kubecolor installation failed."
+        exit 1
+    fi
 
-# Export preset environment variable
-echo "Setting KUBECOLOR_PRESET to protanopia-dark..."
-echo "export KUBECOLOR_PRESET='protanopia-dark'" >> ~/.bashrc
+    # Cleanup
+    echo "Cleaning up..."
+    rm $KUBECOLOR_TAR
 
-# Source the updated .bashrc
-echo "Applying changes to shell..."
-source ~/.bashrc
+    # Update bashrc and reload shell
+    echo "Configuring kubecolor settings..."
+    update_bashrc
 
-# Cleanup
-echo "Cleaning up..."
-rm $KUBECOLOR_TAR
+else
+    echo "Error: kubecolor binary not found after extraction."
+    exit 1
+fi
 
-# Confirmation
-echo "kubecolor has been installed and configured successfully!"
+
