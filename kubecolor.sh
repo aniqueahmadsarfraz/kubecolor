@@ -4,6 +4,7 @@
 KUBECOLOR_VERSION="0.4.0"
 KUBECOLOR_TAR="kubecolor_${KUBECOLOR_VERSION}_linux_amd64.tar.gz"
 KUBECOLOR_URL="https://github.com/kubecolor/kubecolor/releases/download/v${KUBECOLOR_VERSION}/${KUBECOLOR_TAR}"
+DEFAULT_THEME="protanopia-dark"
 
 # Function to update bashrc and reload
 update_bashrc() {
@@ -15,12 +16,27 @@ update_bashrc() {
     # Add new configurations to .bashrc
     echo "# Kubecolor settings" >> ~/.bashrc
     echo "export KUBECOLOR_FORCE_COLOR=1" >> ~/.bashrc
-    echo "export KUBECOLOR_PRESET=dark" >> ~/.bashrc
-    echo "alias kubectl='KUBECOLOR_FORCE_COLOR=1 KUBECOLOR_PRESET=dark kubecolor'" >> ~/.bashrc
+    echo "export KUBECOLOR_PRESET=${DEFAULT_THEME}" >> ~/.bashrc
+    echo "alias kubectl='KUBECOLOR_FORCE_COLOR=1 KUBECOLOR_PRESET=${DEFAULT_THEME} kubecolor'" >> ~/.bashrc
 
     # Source bashrc in current shell and all parent shells
     if [ -f ~/.bashrc ]; then
         exec bash -l
+    fi
+}
+
+# Function to update color.yaml
+update_color_yaml() {
+    # Create .kube directory if it doesn't exist
+    mkdir -p ~/.kube
+
+    # Check if color.yaml exists, if not create it
+    if [ ! -f ~/.kube/color.yaml ]; then
+        echo "Creating color.yaml with default theme..."
+        echo "preset: ${DEFAULT_THEME}" > ~/.kube/color.yaml
+    else
+        # If it exists, ensure the correct preset is set
+        sed -i "s/^preset:.*/preset: ${DEFAULT_THEME}/" ~/.kube/color.yaml
     fi
 }
 
@@ -54,9 +70,11 @@ if [ -f "kubecolor" ]; then
     echo "Configuring kubecolor settings..."
     update_bashrc
 
+    # Update color.yaml for default theme
+    echo "Configuring color.yaml for default theme..."
+    update_color_yaml
+
 else
     echo "Error: kubecolor binary not found after extraction."
     exit 1
 fi
-
-
