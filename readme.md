@@ -1,4 +1,4 @@
-# 🌈 kubecolor: A Colorful Kubernetes Experience 🌟
+# 🟩🟦🟧🟨🟥 kubecolor: A Colorful Kubernetes Experience 🌟
 
 **kubecolor** 🎨 turns your dull `kubectl` output into a vibrant rainbow 🌈! Say goodbye to boring text and hello to a colorful Kubernetes world 🌍! It makes reading logs and resources a breeze 🧹. 
 
